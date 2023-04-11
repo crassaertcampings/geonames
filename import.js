@@ -1,7 +1,6 @@
 const config = require('pelias-config').generate();
 const _ = require('lodash');
 const logger = require('pelias-logger').get('geonames');
-const dbclient = require('pelias-dbclient');
 
 if (_.has(config, 'imports.geonames.adminLookup')) {
   logger.info('imports.geonames.adminLookup has been deprecated, ' +
@@ -11,19 +10,21 @@ if (_.has(config, 'imports.geonames.adminLookup')) {
 const resolvers = require( './lib/tasks/resolvers' );
 const task = require('./lib/tasks/import');
 const validateISOCode = require('./lib/validateISOCode');
+const filenames = [];
 
 let countryCodes = config.imports.geonames.countryCode;
 
-if (!(countryCodes instanceof Array)) {
+if (!Array.isArray(countryCodes)) {
   countryCodes = [countryCodes];
 }
 
-const endStream = dbclient({name: 'geonames'});
+console.log('countryCodes', countryCodes);
 
-countryCodes.forEach(item => {
-  const isocode = validateISOCode( item );
-  const filename = isocode === 'ALL' ? 'allCountries' : isocode;
-  const source = resolvers.selectSource( filename );
-
-  task( source, endStream );
+countryCodes.forEach(countryCode => {
+  const isocode = validateISOCode( countryCode );
+  filenames.push(isocode === 'ALL' ? 'allCountries' : isocode);
 });
+
+const source = resolvers.concatSources( filenames );
+
+task( source );
