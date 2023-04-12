@@ -13,7 +13,7 @@
     "import": "./bin/start",
     "lint": "jshint .",
     "postinstall": "npm run download_metadata",
-    "start": "./bin/start",
+    "start": "./bin/start $COUNTRY",
     "test": "NODE_ENV=test npm run units",
     "ci": "npm test && npm run functional",
     "units": "./bin/units",
